@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hacking Green Age Calculator</title>
+<style>
+/* Body hacking style */
+body {
+  background-color: black;
+  color: #00FF00;
+  font-family: 'Courier New', Courier, monospace;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+body::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 255, 0, 0.05) 0px,
+    rgba(0, 255, 0, 0.05) 2px,
+    transparent 3px,
+    transparent 5px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+/* Heading */
+h1 {
+  font-size: 2.2rem;
+  text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
+  margin-bottom: 20px;
+  animation: neonFlicker 1.5s infinite;
+  z-index: 1;
+}
+/* Label and inputs */
+label {
+  margin: 6px;
+  font-size: 1rem;
+  text-shadow: 0 0 6px #00FF00;
+}
+input[type="date"] {
+  background-color: black;
+  border: 2px solid #00FF00;
+  color: #00FF00;
+  padding: 6px 10px;
+  border-radius: 20px; /* rounded shape */
+  font-size: 1rem;
+  text-shadow: 0 0 5px #00FF00;
+  margin: 6px 0;
+  width: 180px;
+}
+input[type="date"]:focus {
+  outline: none;
+  box-shadow: 0 0 10px #00FF00;
+}
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(5) contrast(2);
+  cursor: pointer;
+}
+
+/* Dropdown hacking style */
+.dropdown {
+  position: relative;
+  width: 200px; /* bigger */
+  margin: 15px 0;
+  z-index: 1;
+}
+.dropdown-selected {
+  background-color: black;
+  border: 2px solid #00FF00;
+  color: #00FF00;
+  padding: 10px 14px; /* bigger */
+  border-radius: 20px;
+  cursor: pointer;
+  text-shadow: 0 0 5px #00FF00;
+  position: relative;
+  font-size: 1.1rem;
+  text-align: center;
+}
+.dropdown-selected::after {
+  content: "▼";
+  position: absolute;
+  right: 12px;
+}
+.dropdown-options {
+  display: none;
+  position: absolute;
+  top: 110%; left: 0;
+  width: 200px;
+  background-color: black;
+  border: 2px solid #00FF00;
+  border-radius: 10px;
+  text-shadow: 0 0 8px #00FF00;
+  z-index: 100;
+  padding: 5px 0;
+}
+.dropdown-options div {
+  padding: 10px 12px;
+  font-size: 1rem;
+  cursor: pointer;
+  border-bottom: 1px solid #00FF00;
+}
+.dropdown-options div:last-child { border-bottom: none; }
+.dropdown-options div:hover { background-color: #003300; transform: scale(1.05); }
+
+/* Buttons */
+.buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 40px; /* calculate button niche */
+}
+button {
+  background-color: black;
+  border: 2px solid #00FF00;
+  color: #00FF00;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 1rem;
+  text-shadow: 0 0 5px #00FF00;
+  cursor: pointer;
+  margin: 6px;
+}
+button:hover { background-color: #003300; }
+
+/* Popup overlay */
+#popupOverlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(3px);
+  z-index: 2000;
+}
+#popupBox {
+  background: black;
+  border: 3px solid #00FF00;
+  border-radius: 12px;
+  padding: 25px;
+  width: 90%;
+  max-width: 420px;
+  text-align: center;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  color: #00FF00;
+  text-shadow: 0 0 10px #00FF00;
+  box-shadow: 0 0 20px #00FF00;
+  animation: popupShow 0.3s forwards;
+}
+#popupBox button { margin-top: 12px; }
+
+/* Animations */
+@keyframes popupShow {
+  from { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+  to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+@keyframes neonFlicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { text-shadow: 0 0 5px #00FF00; }
+  20%, 24%, 55% { text-shadow: 0 0 20px #00FF00; }
+}
+
+.hidden { display: none; }
+
+@media(max-width:768px){
+  input[type="date"], .dropdown { width: 85vw; font-size: 1rem; }
+}
+</style>
+</head>
+<body>
+
+<h1>HACKER AGE CALCULATOR</h1>
+
+<!-- Dropdown -->
+<div class="dropdown">
+  <div class="dropdown-selected" id="dropdownSelected">Auto</div>
+  <div class="dropdown-options" id="dropdownOptions">
+    <div data-value="auto">Auto</div>
+    <div data-value="manual">Manual</div>
+  </div>
+</div>
+
+<!-- Auto input (default visible) -->
+<div id="autoInput">
+  <label for="dob">Enter DOB:</label>
+  <input type="date" id="dob">
+</div>
+
+<!-- Manual input (hidden by default) -->
+<div id="manualInput" class="hidden">
+  <label for="start">Start Date:</label>
+  <input type="date" id="start">
+  <label for="end">End Date:</label>
+  <input type="date" id="end">
+</div>
+
+<!-- Buttons -->
+<div class="buttons">
+  <button onclick="calculateAge()">CALCULATE</button>
+  <button onclick="resetAll()">RESET</button>
+</div>
+
+<!-- Popup -->
+<div id="popupOverlay">
+  <div id="popupBox">
+    <div id="popupResult"></div>
+    <button onclick="closePopup()">CLOSE</button>
+  </div>
+</div>
+
+<script>
+// Dropdown
+const selected = document.getElementById('dropdownSelected');
+const optionsContainer = document.getElementById('dropdownOptions');
+selected.addEventListener('click',()=>{ 
+  optionsContainer.style.display = optionsContainer.style.display==='block'?'none':'block'; 
+});
+optionsContainer.querySelectorAll('div').forEach(option=>{
+  option.addEventListener('click',()=>{
+    selected.textContent = option.textContent;
+    optionsContainer.style.display = 'none';
+    toggleMode(option.getAttribute('data-value'));
+  });
+});
+function toggleMode(mode){
+  if(mode==='auto'){
+    document.getElementById('autoInput').classList.remove('hidden');
+    document.getElementById('manualInput').classList.add('hidden');
+  } else {
+    document.getElementById('autoInput').classList.add('hidden');
+    document.getElementById('manualInput').classList.remove('hidden');
+  }
+}
+
+// Calculate age
+function calculateAge(){
+  let startDate,endDate;
+  const mode=document.getElementById('dropdownSelected').textContent.toLowerCase();
+  if(mode==='auto'){
+    const dob=document.getElementById('dob').value;
+    if(!dob){ showPopup("Enter a valid date!"); return;}
+    startDate=new Date(dob); endDate=new Date();
+  }else{
+    const start=document.getElementById('start').value;
+    const end=document.getElementById('end').value;
+    if(!start || !end){ showPopup("Enter both dates!"); return;}
+    startDate=new Date(start); endDate=new Date(end);
+  }
+  let years=endDate.getFullYear()-startDate.getFullYear();
+  let months=endDate.getMonth()-startDate.getMonth();
+  let days=endDate.getDate()-startDate.getDate();
+  if(days<0){ months--; days+=new Date(endDate.getFullYear(), endDate.getMonth(),0).getDate();}
+  if(months<0){ years--; months+=12;}
+  showPopup(`Age: ${years} years, ${months} months, ${days} days`);
+}
+
+// Reset button
+function resetAll(){
+  document.getElementById('dob').value="";
+  document.getElementById('start').value="";
+  document.getElementById('end').value="";
+  document.getElementById('popupOverlay').style.display="none";
+}
+
+// Popup
+function showPopup(message){
+  document.getElementById('popupResult').innerText = message;
+  document.getElementById('popupOverlay').style.display = 'block';
+}
+function closePopup(){
+  document.getElementById('popupOverlay').style.display = 'none';
+}
+</script>
+
+</body>
+</html>
